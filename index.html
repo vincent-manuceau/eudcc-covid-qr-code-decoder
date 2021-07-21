@@ -1,0 +1,187 @@
+<!-- 
+  EUDCC Decoder - European Electronic Health Certificates Decoder
+
+  MIT License
+
+  Copyright (c) 2021 Vincent Manuceau
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>EUDCC Decoder - European Electronic Health Certificates Decoder</title>
+  <link rel="shortcut icon" href="./favicon.ico"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./jsQR.js"></script>
+  <style>
+    body {
+      font-family: 'Ropa Sans', sans-serif;
+      color: #333;
+      max-width: 640px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+  
+
+    h1 {
+      margin: 10px 0;
+      font-size: 40px;
+    }
+
+    h2 {
+      margin: 30px 0 0 0;
+      font-size: 30px;
+    }
+
+    p{
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    #loadingMessage {
+      text-align: center;
+      padding: 40px;
+      background-color: #eee;
+    }
+
+    #canvas {
+      width: 100%;
+    }
+
+    #output {
+      margin-top: 20px;
+      background: #eee;
+      padding: 10px;
+      padding-bottom: 0;
+    }
+
+    #output div {
+      padding-bottom: 10px;
+      word-wrap: break-word;
+    }
+
+    #noQRFound {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>EUDCC Decoder</h1>
+  <p>D&eacute;codeur hors-ligne de QR-Code pour passe sanitaire Europ&eacute;en</p>
+  <div onclick="start();" id="loadingMessage"><strong>🎥 Cliquez ici pour scanner un QR-Code 🎥</strong></div>
+  <canvas id="canvas" hidden></canvas>
+  <div id="output" hidden>
+    <div id="outputMessage">No QR code detected.</div>
+    <div hidden><b>Data:</b> <span id="outputData"></span></div>
+  </div>
+  <script>
+    function start(){
+
+    var video = document.createElement("video");
+    var canvasElement = document.getElementById("canvas");
+    var canvas = canvasElement.getContext("2d");
+    var loadingMessage = document.getElementById("loadingMessage");
+    var outputContainer = document.getElementById("output");
+    var outputMessage = document.getElementById("outputMessage");
+    var outputData = document.getElementById("outputData");
+
+    function drawLine(begin, end, color) {
+      canvas.beginPath();
+      canvas.moveTo(begin.x, begin.y);
+      canvas.lineTo(end.x, end.y);
+      canvas.lineWidth = 4;
+      canvas.strokeStyle = color;
+      canvas.stroke();
+    }
+
+    // Use facingMode: environment to attemt to get the front camera on phones
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
+      video.srcObject = stream;
+      video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+      video.play();
+      requestAnimationFrame(tick);
+    });
+    var getCode = false;
+    var code = "";
+    function tick() {
+      if(!getCode){
+      loadingMessage.innerText = "⌛ Loading video..."
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        loadingMessage.hidden = true;
+        canvasElement.hidden = false;
+        outputContainer.hidden = false;
+
+        canvasElement.height = video.videoHeight;
+        canvasElement.width = video.videoWidth;
+        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+        var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        var code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+        if (code) {
+          drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
+          drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
+          drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
+          drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
+          outputMessage.hidden = true;
+          outputData.parentElement.hidden = false;
+          outputData.innerText = code.data;
+
+          window.location.href = "./decode.html?code="+encodeURI(code.data);
+          getCode = true;
+
+        } else {
+          outputMessage.hidden = false;
+          outputData.parentElement.hidden = true;
+        }
+      }
+      }
+      requestAnimationFrame(tick);
+    }
+  }
+  </script>
+  <h2>A propos</h2>
+  <p>Ce programme d&eacute;code les QR-Codes de Pass Sanitaires Europ&eacute;ens, il vous permet de voir une partie des informations stock&eacute;es dans ce QR-Code.
+  </p>
+  <p>Ce programme est totalement hors-ligne : <strong>Toutes les informations, ainsi que les images de QR-Codes captur&eacute;s ne sont pas stock&eacute;es, d'aucune fa&ccedil;on que ce soit.</strong> Aucun tra&ccedil;age de son usage n'est possible: aucun cookie, ni aucun tracking utilisateur n'est utilis&eacute;.</p>
+  <p>De plus, la distribution de ce programme est anonyme et d&eacute;centralis&eacute;e par Inter-Planetary File System (IPFS), et non par un serveur web classique, excluant toute possibilit&eacute; de tra&ccedil;age des connections &agrave; ce programme.</p>
+  <p><strong>Important : </strong>L'usage de ce programme est &agrave; titre informatif et strictement personnel, tout d&eacute;tournement de cet usage serait passible de condamnations p&eacute;nales de la part de votre gouvernement.</strong></p>
+
+  <h2>Auteur</h2>
+  <p><strong>Vincent Manuceau</strong><ul>
+    <li><a target="_newTab" href="https://orcid.org/0000-0003-3425-8459">ORCID : 0000-0003-3425-8459</a></li>
+    <li><a target="_newTab" href="https://www.researchgate.net/profile/Vincent-Manuceau">ResearchGate</a></li>
+  </ul>
+  </p>
+
+  <h2>R&eacute;f&eacute;rences</h2>
+  <ul>
+    <li><a target="_newTab" href="https://fr.wikipedia.org/wiki/InterPlanetary_File_System">InterPlanetary_File_System (IPFS)</a></li>
+    <li><a target="_newTab" href="https://github.com/ehn-dcc-development/hcert-spec/releases/download/1.0.5/dgc_spec-1.0.5-final.pdf">Electronic Health Certificates Specifications</a></li>
+    <li><a target="_newTab" href="https://github.com/cozmo/jsQR">jsQR</a></li>
+    <li><a target="_newTab" href="https://github.com/imaya/zlib.js">ZLib.js</a></li>
+    <li><a target="_newTab" href="https://github.com/shanewholloway/js-cbor-codec">JS-CBOR-Codec</a></li>
+    <li><a target="_newTab" href="https://github.com/gilbsgilbs/base45-js">Base45-js</a></li>
+  </ul>
+  
+
+</body>
+</html>

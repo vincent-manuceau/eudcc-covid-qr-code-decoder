@@ -1,0 +1,207 @@
+<!-- 
+  EUDCC Decoder - European Electronic Health Certificates Decoder
+
+  MIT License
+
+  Copyright (c) 2021 Vincent Manuceau
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EUDCC Decoder - European Electronic Health Certificates Decoder</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="./favicon.ico"/>
+</head>
+<body>
+    <div id="results"></div>
+    <script src="./base45.js"></script>
+    <script src="./zlib.min.js"></script>
+    <script>
+    function $_GET(param) {
+        var vars = {};
+        window.location.href.replace( location.hash, '' ).replace( 
+            /[?&]+([^=&]+)=?([^&]*)?/gi, // regexp
+            function( m, key, value ) { // callback
+                vars[key] = value !== undefined ? value : '';
+            }
+        );
+
+        if ( param ) {
+            return vars[param] ? vars[param] : null;    
+        }
+        return vars;
+    }
+
+    function recurDispl(o){
+        var str = "";
+        if(typeof(o) === 'object'){
+            str += "<ul>"
+            for(var i in o){
+                str += "<li><strong>"+i+"</strong> : "+recurDispl(o[i])+"</li>"
+            }
+            str += "</ul>"
+            return str ;
+        }
+        else return o ;
+    }
+
+    var v = {
+            1 : "IssuedAt",
+            2 : "Sub",
+            3 : "Aud",
+            4 : "Expiration",
+            5 : "Nbf",
+            6 : "Iat",
+            7 : "Cti",
+            "-260" : { 
+                1 : {
+                    "CovidCert" : {
+                        "ver" : "Version",
+                        "nam" : "PersonalName",
+                        "dob" : "DateOfBirth",
+                        "v" : "VaccineRecords",
+                        "t":"TestRecords" ,
+                        "r":"RecoveryRecords" 
+                    },
+                    
+                    "PersonalName":{
+                        "fn" : "FamilyName",
+                        "fnt" : "FamilyNameStd",
+                        "gn" : "GivenName",
+                        "gnt" : "GivenNameStd",       
+                    },
+                    "VaccineRecords": {
+                        "tg" : "Target",
+                        "vp" : "Vaccine",
+                        "mp" : "Product",
+                        "ma" : "Manufacturer",
+                        "dn" : "Doses",
+                        "sd" : "DoseSeries",
+                        "dt" : "Date",
+                        "co" : "Country",
+                        "is" : "Issuer",
+                        "ci" : "CertificateID",         
+                    },
+                    "TestRecords" : {
+                        "tg" : "Target",
+                        "tt" : "Type of Test",
+                        "nm" : "Name",
+                        "ma" : "Manufacturer",
+                        "sc" : "Date/Time of Sample Collection",
+                        "tr" : "Test Result",
+                        "tc" : "TestingCentre",
+                        "co" : "Country",
+                        "is" : "Issuer",
+                        "ci" : "CertificateID"
+                    },
+                    "RecoveryRecords" : {
+                        "tg" : "Target",
+                        "fr" : "Date of first positive NAA test result",
+                        "co" : "Country",
+                        "is" : "Issuer",
+                        "df" : "Certificate Valid From",
+                        "du" : "Certificate Valid Until",
+                        "ci" : "CertificateID",         
+                    }
+            }}
+        }
+
+
+
+    </script>
+    <script type='module'>
+        import {cbor_encode, cbor_decode} from "./cbor-codec.mjs"
+        var code = decodeURI( $_GET( 'code' ) );
+
+        if(code.substring(0,4) != "HC1:"){
+            alert("Bad QR Code image format");  
+            throw new Error("Bad QR Code image format");    
+        }
+        
+
+        code = decode(code.substring(4).trim());
+        var inflate = new Zlib.Inflate(code);
+        var plain = inflate.decompress();
+        var cwt = (cbor_decode(plain.buffer));
+        cwt = cwt.body
+        var p = cbor_decode(cwt[2]);
+                
+
+        var obj = {};
+        console.dir(v)
+        for(var i in p){
+            obj["CovidCert"] = {}
+            console.dir(typeof(p[i]))
+            if (typeof(p[i]) === "object"){
+                console.log(v[i]+" : ");
+                console.dir(v[i])
+                for(var j in p[i]){
+                    console.log("j"+j)
+                    console.dir(p[i][j])
+                    console.dir(v[i][j]["CovidCert"])
+                    for(var k in p[i][j]){
+                        obj["CovidCert"][v[i][j]["CovidCert"][k]] = {}
+                        if (Array.isArray(p[i][j][k])){
+                            obj["CovidCert"][v[i][j]["CovidCert"][k]] = []
+                            console.dir(v[i][j]["CovidCert"][k]+":")
+                            for(var l in p[i][j][k]){
+                                var curObj = {};
+                                for(var m in p[i][j][k][l]){
+                                    console.log(v[i][j][v[i][j]["CovidCert"][k]][m]+" : "+p[i][j][k][l][m]);
+                                    curObj[v[i][j][v[i][j]["CovidCert"][k]][m]] = p[i][j][k][l][m]
+                                }
+                                obj["CovidCert"][v[i][j]["CovidCert"][k]].push(curObj);
+                            }
+                        }
+                        else if (typeof(p[i][j][k]) === 'object'){
+                             console.dir(v[i][j]["CovidCert"][k]+":")
+                            for(var l in p[i][j][k]){
+                                console.log(v[i][j][v[i][j]["CovidCert"][k]][l]+" : "+p[i][j][k][l]);
+                                obj["CovidCert"][v[i][j]["CovidCert"][k]][v[i][j][v[i][j]["CovidCert"][k]][l]] = p[i][j][k][l]
+                            }
+                        } else{
+                            console.log(v[i][j]["CovidCert"][k]+" : "+p[i][j][k]);
+                            obj["CovidCert"][v[i][j]["CovidCert"][k]] = p[i][j][k]
+                        }
+                    }
+                }                
+            }
+            else{
+                console.log(v[i]+" : "+p[i]);
+                obj[v[i]] = p[i];
+            }
+
+        }      
+    console.dir(obj)
+    var results = document.getElementById("results");
+    results.innerHTML= "<center><h2>"+obj.CovidCert.PersonalName.GivenName+" "+obj.CovidCert.PersonalName.FamilyName+"</h2>"+"<h3>"+obj.CovidCert.DateOfBirth+"</h3></center>"+recurDispl(obj)+""
+</script>
+<style>li{margin-bottom:15px;}
+ul {
+     padding-left:30px;
+}
+ul > ul {
+    margin-left: 10px;
+}</style>
+<center><strong><a style='padding-bottom: 50px' href='./index.html'>Nouveau Scan QR Code</a></strong></center>
+</body>
+</html>
