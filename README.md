@@ -1,7 +1,7 @@
 # EUDCC EU Digital Covid Certificate QR-Code Decoder 
 Décodeur hors-ligne de QR-Code pour passe sanitaire Européen
 
-[Demo link (hosted on IPFS) : https://ipfs.io/ipfs/QmNS4d4j8C3Ry4PbG3Uroi2of3GKjg7s9Ahfoy71cmmYVH](https://ipfs.io/ipfs/QmNS4d4j8C3Ry4PbG3Uroi2of3GKjg7s9Ahfoy71cmmYVH)
+[Demo link (hosted on IPFS) : https://ipfs.io/ipns/k51qzi5uqu5dh4xhsafbi0yblcup35uanj72r9mu0xhn3s58w4h8ig8vc0pecz](https://ipfs.io/ipns/k51qzi5uqu5dh4xhsafbi0yblcup35uanj72r9mu0xhn3s58w4h8ig8vc0pecz)
 
 # A propos
 Ce programme décode les QR-Codes de Pass Sanitaires Européens, il vous permet de voir une partie des informations stockées dans ce QR-Code.
