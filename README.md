@@ -1,6 +1,7 @@
 # EUDCC EU Digital Covid Certificate QR-Code Decoder 
 Décodeur hors-ligne de QR-Code pour passe sanitaire Européen
 
+[Demo link (hosted on IPFS) : https://ipfs.io/ipfs/QmNS4d4j8C3Ry4PbG3Uroi2of3GKjg7s9Ahfoy71cmmYVH](https://ipfs.io/ipfs/QmNS4d4j8C3Ry4PbG3Uroi2of3GKjg7s9Ahfoy71cmmYVH)
 
 # A propos
 Ce programme décode les QR-Codes de Pass Sanitaires Européens, il vous permet de voir une partie des informations stockées dans ce QR-Code.
@@ -12,16 +13,14 @@ De plus, la distribution de ce programme est anonyme et décentralisée par Inte
 Important : L'usage de ce programme est à titre informatif et strictement personnel, tout détournement de cet usage serait passible de condamnations pénales de la part de votre gouvernement.
 
 # Auteur
-
-    Vincent Manuceau
-    ORCID 0000-0003-3425-8459 https://orcid.org/0000-0003-3425-8459
-    ResearchGate https://www.researchgate.net/profile/Vincent-Manuceau
+Vincent Manuceau
+* [ORCID 0000-0003-3425-8459](https://orcid.org/0000-0003-3425-8459)
+* [ResearchGate](https://www.researchgate.net/profile/Vincent-Manuceau)
     
 # Références
-
-    InterPlanetary_File_System (IPFS) https://fr.wikipedia.org/wiki/InterPlanetary_File_System
-    Electronic Health Certificates Specifications https://github.com/ehn-dcc-development/hcert-spec/releases/download/1.0.5/dgc_spec-1.0.5-final.pdf
-    jsQR https://github.com/cozmo/jsQR
-    ZLib.js https://github.com/imaya/zlib.js
-    JS-CBOR-Codec https://github.com/shanewholloway/js-cbor-codec
-    Base45-js https://github.com/gilbsgilbs/base45-js
+* [InterPlanetary_File_System (IPFS)](https://fr.wikipedia.org/wiki/InterPlanetary_File_System)
+* [Electronic Health Certificates Specifications](https://github.com/ehn-dcc-development/hcert-spec/releases/download/1.0.5/dgc_spec-1.0.5-final.pdf)
+* [jsQR](https://github.com/cozmo/jsQR)
+* [ZLib.js](https://github.com/imaya/zlib.js)
+* [JS-CBOR-Codec](https://github.com/shanewholloway/js-cbor-codec)
+* [Base45-js](https://github.com/gilbsgilbs/base45-js)
